@@ -1,8 +1,3 @@
-
-# coding: utf-8
-
-# In[1]:
-
 #Lets have matplotlib "inline"
 get_ipython().magic(u'pylab inline')
 
@@ -17,22 +12,13 @@ import pyopencl as cl
 import os
 os.environ["PYOPENCL_COMPILER_OUTPUT"] = "1"
 
-
-# In[2]:
-
 #Create OpenCL context
 cl_ctx = cl.create_some_context()
 
 #Create an OpenCL command queue
 cl_queue = cl.CommandQueue(cl_ctx)
 
-
-# In[21]:
-
 get_ipython().run_cell_magic(u'cl_kernel', u'', u'__kernel void wave_eq_2D(__global float *u2, __global float *u1, __global const float *u0, float kappa, float dt, float dx, float dy) {\n    //Get total number of cells\n    int nx = get_global_size(0);\n    int ny = get_global_size(1);\n    int i = get_global_id(0);\n    int j = get_global_id(1);\n    \n    //Calculate the four indices of our neighbouring cells\n    int center = j * nx + i;\n    int north = (j + 1) * nx + i;\n    int south = (j - 1) * nx + i;\n    int east = j * nx + (i + 1);\n    int west = j * nx + (i - 1);\n    \n    //Internall cells\n    if (i > 0 && i < nx - 1 && j > 0 && j < ny - 1) {\n        u2[center] = 2 * u1[center] \n            - u0[center]\n            + kappa * (dt * dt) / (dx * dx) * (u1[west] - 2 * u1[center] + u1[east])\n            + kappa * (dt * dt) / (dy * dy) * (u1[south] - 2 * u1[center] + u1[north]);\n    }\n}\n\n__kernel void wave_eq_2D_bc(__global float *u) {\n    //Get total number of cells\n    int nx = get_global_size(0);\n    int ny = get_global_size(1);\n    int i = get_global_id(0);\n    int j = get_global_id(1);\n    \n    //Calculate the four indices of our neighbouring cells\n    int center = j * nx + i;\n    int north = (j + 1) * nx + i;\n    int south = (j - 1) * nx + i;\n    int east = j * nx + (i + 1);\n    int west = j * nx + (i - 1);\n    \n    if (i == 0) {\n        u[center] = u[east];\n    }\n    else if (i == nx - 1) {\n        u[center] = u[west];\n    }\n    else if (j == 0) {\n        u[center] = u[north];\n    }\n    else if (j == ny - 1) {\n        u[center] = u[south];\n    }\n}')
-
-
-# In[55]:
 
 """
 Class that holds data for the wave equation in OpenCL
@@ -73,9 +59,6 @@ class WaveDataCL:
         #Return
         return u0;
 
-
-# In[56]:
-
 """
 Computes the heat equation using an explicit finite difference scheme with OpenCL
 """
@@ -96,21 +79,17 @@ def opencl_wave_eq(cl_data, kappa, dx, dy, nt):
         #Swap variables
         cl_data.u0, cl_data.u1, cl_data.u2 = cl_data.u1, cl_data.u2, cl_data.u0
 
-
-# In[62]:
-
 #Create test input data
 nx = 100
 ny = nx
-u0 = np.zeros((ny, nx)).astype(np.float32)
-for i in range(5, 95):
-    for j in range(5, 95):
-        u0[i, j] = 10
+u0 = np.zeros((ny, nx)).astype(np.float32) #Matriz with zeros
+for i in range(40, 60):
+    for j in range(40, 60):
+        u0[i, j] = 10 #20x20 Center cells with ten
 cl_data = WaveDataCL(u0)
 kappa = 1.0
 dx = 1.0
 dy = 1.0
-
 
 #Plot initial conditions
 figure()
@@ -127,15 +106,3 @@ for i in range(1, 5):
     #Plot
     figure()
     imshow(u1)
-    
-
-
-# In[ ]:
-
-
-
-
-# In[ ]:
-
-
-

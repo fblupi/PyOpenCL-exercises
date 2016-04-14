@@ -1,8 +1,3 @@
-
-# coding: utf-8
-
-# In[13]:
-
 #Lets have matplotlib "inline"
 get_ipython().magic(u'pylab inline')
 
@@ -15,24 +10,15 @@ import pyopencl as cl
 
 #Make sure we get compiler output from OpenCL
 import os
-os.environ["PYOPENCL_COMPILER_OUTPUT"] = "1"
-
-
-# In[14]:
+os.environ["PYOPENCL_COMPILER_OUTPUT"] = "1"7
 
 #Create OpenCL context
 cl_ctx = cl.create_some_context()
 
 #Create an OpenCL command queue
-cl_queue = cl.CommandQueue(cl_ctx)
-
-
-# In[15]:
+cl_queue = cl.CommandQueue(cl_ctx)7
 
 get_ipython().run_cell_magic(u'cl_kernel', u'', u'__kernel void heat_eq_2D(__global float *u1, __global const float *u0, float kappa, float dt, float dx, float dy) {\n    //Get total number of cells\n    int nx = get_global_size(0);\n    int ny = get_global_size(1);\n    int i = get_global_id(0);\n    int j = get_global_id(1);\n    \n    //Calculate the four indices of our neighbouring cells\n    int center = j * nx + i;\n    int north = (j + 1) * nx + i;\n    int south = (j - 1) * nx + i;\n    int east = j * nx + (i + 1);\n    int west = j * nx + (i - 1);\n    \n    //Internall cells\n    if (i > 0 && i < nx - 1 && j > 0 && j < ny - 1) {\n        u1[center] = u0[center] \n            + kappa * dt / (dx * dx) * (u0[west] - 2 * u0[center] + u0[east])\n            + kappa * dt / (dy * dy) * (u0[south] - 2 * u0[center] + u0[north]);\n    }\n    // Boundary conditions (ghost cells)\n    else {\n        u1[center] = u0[center];\n    }\n}')
-
-
-# In[29]:
 
 """
 Class that holds data for the heat equation in OpenCL
@@ -70,9 +56,6 @@ class HeatDataCL:
         #Return
         return u0;
 
-
-# In[32]:
-
 """
 Computes the heat equation using an explicit finite difference scheme with OpenCL
 """
@@ -89,9 +72,6 @@ def opencl_heat_eq(cl_data, kappa, dx, dy, nt):
         
         #Swap variables
         cl_data.u0, cl_data.u1 = cl_data.u1, cl_data.u0
-
-
-# In[35]:
 
 #Create test input data
 nx = 100
@@ -117,10 +97,3 @@ for i in range(1, 5):
     #Plot
     figure()
     imshow(u1)
-    
-
-
-# In[ ]:
-
-
-
